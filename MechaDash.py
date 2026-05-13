@@ -28,7 +28,7 @@ bg_x1 = 0
 bg_x2 = BG_WIDTH
 
 # Velocidade do scroll (pixels por frame). Valor negativo = move pra esquerda.
-BG_SPEED = -4
+BG_SPEED = -3
 
 # ===== Loop principal =====
 while game:
