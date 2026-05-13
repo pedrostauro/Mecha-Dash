@@ -1,6 +1,6 @@
 """
 Mecha Dash — Projeto Final de Design de Software (Insper).
-Versão 3: adiciona o personagem (classe Player) sobre o background.
+Versão 4: movimento do personagem.
 """
 
 # ===== Inicialização =====
@@ -14,12 +14,12 @@ WIDTH = 1280
 HEIGHT = 680
 FPS = 60
 BG_SPEED = -5            # velocidade do scroll do fundo (px/frame)
-PLAYER_SIZE = 50         # lado do sprite do player em pixels
+PLAYER_SIZE = 60         # lado do sprite do player em pixels
 GRAVITY = 0.6            # aceleração pra baixo (px/frame²)
 THRUST = -1.0            # aceleração do jetpack (negativo = sobe)
 MAX_FALL_SPEED = 12      # velocidade terminal de queda
 MAX_RISE_SPEED = -10     # velocidade máxima de subida
-GROUND_OFFSET = 210      # limitando o chão
+GROUND_OFFSET = 70       # limitando o chão
 CEILING_OFFSET = 110     # limitando o teto
 
 # ----- Gera tela principal
