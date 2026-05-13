@@ -10,11 +10,17 @@ import pygame
 pygame.init()
 
 # ----- Constantes do jogo
-WIDTH = 800
-HEIGHT = 480
+WIDTH = 1280
+HEIGHT = 680
 FPS = 60
-BG_SPEED = -3            # velocidade do scroll do fundo (px/frame)
-PLAYER_SIZE = 64         # lado do sprite do player em pixels
+BG_SPEED = -5            # velocidade do scroll do fundo (px/frame)
+PLAYER_SIZE = 50         # lado do sprite do player em pixels
+GRAVITY = 0.6            # aceleração pra baixo (px/frame²)
+THRUST = -1.0            # aceleração do jetpack (negativo = sobe)
+MAX_FALL_SPEED = 12      # velocidade terminal de queda
+MAX_RISE_SPEED = -10     # velocidade máxima de subida
+GROUND_OFFSET = 210      # limitando o chão
+CEILING_OFFSET = 110     # limitando o teto
 
 # ----- Gera tela principal
 window = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -24,8 +30,8 @@ pygame.display.set_caption('Mecha Dash')
 class Player(pygame.sprite.Sprite):
     """Personagem controlado pelo jogador.
 
-    Na v3, fica parado em uma posição fixa (x = WIDTH/4, y = HEIGHT/2).
-    A movimentação com gravidade e empuxo será adicionada na v4.
+    Posição x fixa (WIDTH/4). Posição y controlada por gravidade
+    constante e empuxo do jetpack enquanto ESPAÇO estiver pressionado.
 
     Args:
         x (int): posição horizontal inicial (centro do sprite).
@@ -34,22 +40,43 @@ class Player(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         super().__init__()
-        # Carrega a imagem com canal alfa (transparência funciona)
         self.image = pygame.image.load('assets/img/player.png').convert_alpha()
-        # Redimensiona pro tamanho-padrão definido nas constantes
         self.image = pygame.transform.scale(
             self.image, (PLAYER_SIZE, PLAYER_SIZE)
         )
-        # Rect controla posição e colisão futura
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
 
-    def update(self):
-        """Atualiza o estado do player a cada frame.
+        # Velocidade vertical em px/frame. Positiva = descendo.
+        self.speedy = 0
+        # True enquanto o jogador segura ESPAÇO.
+        self.thrusting = False
 
-        Vazio na v3 — o player ainda não se mexe.
-        """
-        pass
+    def update(self):
+        """Aplica gravidade, empuxo e limites de tela a cada frame."""
+        # 1. Gravidade puxa pra baixo sempre
+        self.speedy += GRAVITY
+
+        # 2. Se o jetpack está ligado, aplica empuxo pra cima
+        if self.thrusting:
+            self.speedy += THRUST
+
+        # 3. Limita velocidades (terminal velocity em ambas direções)
+        if self.speedy > MAX_FALL_SPEED:
+            self.speedy = MAX_FALL_SPEED
+        if self.speedy < MAX_RISE_SPEED:
+            self.speedy = MAX_RISE_SPEED
+
+        # 4. Aplica o movimento
+        self.rect.y += self.speedy
+
+        # 5. Prende o player entre teto e chão da tela
+        if self.rect.top < CEILING_OFFSET:
+            self.rect.top = CEILING_OFFSET
+            self.speedy = 0           # bate no teto e para
+        if self.rect.bottom > HEIGHT - GROUND_OFFSET:
+            self.rect.bottom = HEIGHT - GROUND_OFFSET
+            self.speedy = 0           # bate no chão e para
 
 
 # ----- Inicia assets
@@ -78,6 +105,14 @@ while game:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game = False
+        # KEYDOWN dispara uma vez no instante que a tecla é pressionada
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                player.thrusting = True
+        # KEYUP dispara uma vez no instante que a tecla é solta
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_SPACE:
+                player.thrusting = False
 
     # ----- Atualiza estado do jogo
     bg_x1 += BG_SPEED
